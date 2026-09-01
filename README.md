@@ -7,15 +7,15 @@ YOLOv8로 도로 포트홀을 실시간 탐지하고, OpenVINO 기반 Depth Anyt
 
 ```mermaid
 graph TB
-    User[사용자 브라우저] -->|:80| Web[web-server (Apache)]
-    Web -->|reverse proxy| Dash[dashboard (Streamlit) :8501]
-    Dash --> DB[(db: PostgreSQL :5432)]
-    AICore[ai-core (YOLOv8 + 자동 파인튜닝)] --> DB
-    AICore -->|HTTP| NPU[NPU Worker — Windows 호스트 :9001<br/>OpenVINO Depth Anything V2]
-    Dash -.->|선택| Phi3[SLM NPU Worker — Windows 호스트 :9002<br/>Phi-3-mini 챗봇]
-    Web -.->|선택| CF[cloudflared — 외부 터널]
+    User["사용자 브라우저"] -->|"포트 80"| Web["web-server (Apache)"]
+    Web -->|"reverse proxy"| Dash["dashboard (Streamlit), 포트 8501"]
+    Dash --> DB["db: PostgreSQL, 포트 5432"]
+    AICore["ai-core (YOLOv8 + 자동 파인튜닝)"] --> DB
+    AICore -->|"HTTP"| NPU["NPU Worker - Windows 호스트, 포트 9001<br/>OpenVINO Depth Anything V2"]
+    Dash -.->|"선택"| Phi3["SLM NPU Worker - Windows 호스트, 포트 9002<br/>Phi-3-mini 챗봇"]
+    Web -.->|"선택"| CF["cloudflared - 외부 터널"]
 
-    subgraph "Docker (docker-compose.yml)"
+    subgraph Docker["Docker (docker-compose.yml)"]
         Web
         Dash
         AICore
