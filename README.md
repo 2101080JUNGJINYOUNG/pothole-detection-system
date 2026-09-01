@@ -5,27 +5,41 @@ YOLOv8로 도로 포트홀을 실시간 탐지하고, OpenVINO 기반 Depth Anyt
 
 ## 아키텍처
 
+2개의 Docker 컨테이너(추론 + LAMP 웹서버)로 구성됩니다. 자세한 원본 블록도는
+[`docs/references/`](docs/references/)의 발표자료를 참고하세요.
+
 ```mermaid
 graph TB
-    User["사용자 브라우저"] -->|"포트 80"| Web["web-server (Apache)"]
-    Web -->|"reverse proxy"| Dash["dashboard (Streamlit), 포트 8501"]
-    Dash --> DB["db: PostgreSQL, 포트 5432"]
-    AICore["ai-core (YOLOv8 + 자동 파인튜닝)"] --> DB
-    AICore -->|"HTTP"| NPU["NPU Worker - Windows 호스트, 포트 9001<br/>OpenVINO Depth Anything V2"]
-    Dash -.->|"선택"| Phi3["SLM NPU Worker - Windows 호스트, 포트 9002<br/>Phi-3-mini 챗봇"]
-    Web -.->|"선택"| CF["cloudflared - 외부 터널"]
+    User["사용자"] -->|"접속"| CF["Cloudflare Tunnel<br/>(선택)"]
+    CF --> Apache["Apache Web Server"]
+    Apache --> WebUI["Custom Web UI<br/>(데이터 시각화 대시보드)"]
+    WebUI <--> DB["MySQL<br/>(탐지 정보 저장)"]
 
-    subgraph Docker["Docker (docker-compose.yml)"]
-        Web
-        Dash
-        AICore
+    Video["데이터 입력<br/>(동영상 / 이미지)"] --> YOLO["YOLOv8<br/>포트홀 탐지 모델"]
+    YOLO -->|"포트홀 감지"| Crop["Object Cropping<br/>(탐지 영역 추출)"]
+    Crop -->|"전처리 이미지 송신"| NPU["NPU Worker - Windows 호스트, 포트 9001<br/>OpenVINO Depth Anything V2"]
+    NPU -->|"깊이 비율 계산 결과"| Risk["위험도 평가<br/>(위치 가중치 적용)"]
+    Risk -->|"위치 유형 결정"| Kakao["Kakao Map API<br/>(위치 정보 연동)"]
+    Risk -->|"결과 데이터 전송"| DB
+    DB -->|"학습 데이터 제공"| FT["Auto Fine-Tuning"]
+    FT -->|"모델 변경"| YOLO
+    WebUI -.->|"선택"| Phi3["SLM NPU Worker - Windows 호스트, 포트 9002<br/>Phi-3-mini 챗봇"]
+
+    subgraph Inference["Container: inference (AI Core)"]
+        YOLO
+        Crop
+        Risk
+    end
+
+    subgraph Lamp["Container: lamp (Apache + MySQL + Flask)"]
+        Apache
+        WebUI
         DB
-        CF
     end
 ```
 
-- **web-server / dashboard / ai-core / db / cloudflared** — `docker-compose.yml`로 함께 뜨는 5개 컨테이너입니다.
-- **NPU Worker / SLM NPU Worker(Phi-3 챗봇)** — Windows 호스트에서 **별도로 직접 실행**해야 합니다(컨테이너 밖). `docker-compose.yml`은 `host.docker.internal`로 이 둘을 호출합니다.
+- **inference / lamp / cloudflared** — `docker-compose.yml`로 함께 뜨는 컨테이너입니다. `lamp` 컨테이너 안에 Apache·MySQL·Flask가 전부 들어있습니다.
+- **NPU Worker / SLM NPU Worker(Phi-3 챗봇)** — Windows 호스트에서 **별도로 직접 실행**해야 합니다(컨테이너 밖). `inference` 컨테이너는 `host.docker.internal`로 이 둘을 호출합니다.
 
 ## 빠른 시작
 
@@ -37,37 +51,38 @@ copy .env.example .env
 # 2. Docker 컨테이너 시작
 docker-compose up -d --build
 
-# 3. NPU Worker 시작 (별도 PowerShell 창, Windows 호스트에서)
+# 3. 기본 사용자 생성
+docker exec -it deep-guardian-lamp python3 /var/www/app/create_default_users.py
+
+# 4. NPU Worker 시작 (별도 PowerShell 창, Windows 호스트에서)
 .\start_npu_worker.ps1
 
-# 4. (선택) Phi-3 챗봇 워커 시작 (별도 PowerShell 창)
+# 5. (선택) Phi-3 챗봇 워커 시작 (별도 PowerShell 창)
 .\start_phi3_worker.ps1
 ```
 
-접속: http://localhost (또는 http://localhost:8501 직접 접속) · 기본 계정 `admin`/`admin123`, `user`/`user123` — **운영 환경에서는 반드시 변경하세요.**
-
-더 자세한 절차는 [`docs/QUICK_START.md`](docs/QUICK_START.md)를 참고하세요.
+접속: http://localhost · 기본 계정 `admin`/`admin123`, `user`/`user123` — **운영 환경에서는 반드시 변경하세요.**
 
 ## 기술 스택
 
 | 영역 | 기술 |
 |---|---|
-| 탐지 모델 | YOLOv8n (Ultralytics) |
+| 탐지 모델 | YOLOv8n (Ultralytics, PyTorch) |
 | 깊이 검증 | Depth Anything V2 + OpenVINO (NPU 가속) |
 | 챗봇 / 요약 | Phi-3-mini(OpenVINO GenAI), Google Gemini |
-| 백엔드 | Django ORM, Streamlit, Flask |
-| 데이터베이스 | PostgreSQL |
+| 백엔드 | Django ORM, Flask |
+| 데이터베이스 | MySQL |
 | 위치 정보 | Kakao Map API |
-| 인프라 | Docker Compose, Apache, Cloudflare Tunnel |
+| 인프라 | Docker Compose, Apache(+mod_wsgi), Cloudflare Tunnel |
 
 ## 문서
 
 전체 문서 목록은 [`docs/INDEX.md`](docs/INDEX.md)에 있습니다. 주요 항목:
 
 - [`docs/PROJECT_HISTORY.md`](docs/PROJECT_HISTORY.md) — 아키텍처가 지금 형태로 정착하기까지의 변천사
-- [`docs/references/`](docs/references/) — 이 프로젝트와 관련된 연구 논문
-- [`edge-ai/`](edge-ai/) — 학습된 모델을 엣지 기기(라즈베리파이 등)에 배포하기 위한 별도 실험(ONNX/TFLite 변환, GPS 경로, 실시간 스트리밍 프로토타입) — 메인 시스템과는 아직 통합되지 않음
-- [`archive/`](archive/) — 폐기된 2/3-컨테이너 아키텍처 실험 코드
+- [`docs/references/`](docs/references/) — 팀 발표자료(공식 아키텍처 블록도), 관련 연구 논문
+- [`edge-ai/`](edge-ai/) — 학습된 모델을 엣지 기기(라즈베리파이 등)에 배포하기 위한 별도 실험 — 메인 시스템과는 아직 통합되지 않음
+- [`archive/`](archive/) — 이전에 메인이었던 PostgreSQL 5-컨테이너 구조 등 지금은 쓰지 않는 코드
 
 ## ⚠️ 알려진 제한사항
 

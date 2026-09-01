@@ -1,0 +1,132 @@
+# Docker Compose file for Deep-Guardian (Original 5-Container Architecture)
+# Container 1: web-server (Apache Reverse Proxy)
+# Container 2: dashboard (Streamlit)
+# Container 3: ai-core (AI Engine)
+# Container 4: db (PostgreSQL)
+# Container 5: cloudflared (Cloudflare Tunnel)
+
+services:
+  # Container 1: web-server (Apache Reverse Proxy)
+  web-server:
+    build:
+      context: ./apache
+      dockerfile: Dockerfile
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    container_name: deep-guardian-web
+    ports:
+      - "80:80"
+    volumes:
+      - ./shared_images:/usr/local/apache2/htdocs/shared_images:ro
+    depends_on:
+      - dashboard
+    networks:
+      - deep-guardian-network
+    restart: unless-stopped
+
+  # Container 2: dashboard (Streamlit)
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    container_name: deep-guardian-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./dashboard:/app
+      - ./shared_images:/app/shared_images:ro
+      - ./django_app:/app/django_app:ro
+    environment:
+      - DATABASE_URL=postgresql://pothole_user:pothole_pass@db:5432/pothole_db
+      - SLM_NPU_WORKER_URL=http://host.docker.internal:9002
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - db
+    networks:
+      - deep-guardian-network
+    restart: unless-stopped
+
+  # Container 3: ai-core (AI Engine)
+  ai-core:
+    build:
+      context: ./ai-core
+      dockerfile: Dockerfile
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    container_name: deep-guardian-ai
+    volumes:
+      - ./ai-core:/app
+      - ./ai-core/models:/app/models
+      - ./shared_images:/app/shared_images
+      - ./ai-core/videos:/app/videos
+      - ./django_app:/app/django_app:ro
+    environment:
+      - NPU_WORKER_URL=http://host.docker.internal:9001/depth
+      - YOLO_MODEL_PATH=/app/models/best2.pt
+      - CUDA_VISIBLE_DEVICES=0
+      - KAKAO_MAP_APP_KEY=${KAKAO_MAP_APP_KEY:-}
+      - DATABASE_URL=postgresql://pothole_user:pothole_pass@db:5432/pothole_db
+    depends_on:
+      - db
+    networks:
+      - deep-guardian-network
+    restart: unless-stopped
+    # GPU 지원 (WSL에서 사용 가능한 경우)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Container 4: db (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: deep-guardian-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      - POSTGRES_DB=pothole_db
+      - POSTGRES_USER=pothole_user
+      - POSTGRES_PASSWORD=pothole_pass
+    networks:
+      - deep-guardian-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pothole_user -d pothole_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Container 5: cloudflared (ngrok 터널)
+  cloudflared:
+    build:
+      context: ./cloudflared
+      dockerfile: Dockerfile
+    container_name: deep-guardian-tunnel
+    environment:
+      # ngrok authtoken 설정 (필수)
+      # 무료 계정 생성: https://dashboard.ngrok.com/signup
+      # authtoken 확인: https://dashboard.ngrok.com/get-started/your-authtoken
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:-}
+    depends_on:
+      - web-server
+    networks:
+      - deep-guardian-network
+    restart: unless-stopped
+
+networks:
+  deep-guardian-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

@@ -1,11 +1,10 @@
 -- Deep-Guardian 포트홀 데이터베이스 초기화 스크립트 (MySQL)
--- lamp-container 시작 시 /docker-entrypoint-initdb.d/init.sql로 마운트되어 자동 실행됩니다.
--- django_app/models.py의 Pothole/User 모델과 컬럼이 1:1로 대응합니다.
 
+-- 데이터베이스 생성 (이미 존재하는 경우 무시)
 CREATE DATABASE IF NOT EXISTS pothole_db;
 USE pothole_db;
 
--- 포트홀 테이블
+-- 포트홀 테이블 생성
 CREATE TABLE IF NOT EXISTS potholes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     latitude DECIMAL(10, 8) NOT NULL,
@@ -20,36 +19,14 @@ CREATE TABLE IF NOT EXISTS potholes (
     bbox_y2 INT,
     confidence_score DECIMAL(5, 4),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-
-    -- 위치 기반 위험도 (RISK_PRIORITY_SYSTEM.md 참고)
-    location_type VARCHAR(50) DEFAULT 'general',
-    risk_level VARCHAR(20) DEFAULT 'medium',
-    priority_score DECIMAL(10, 4) DEFAULT 1.0,
-    location_description VARCHAR(200),
-
-    -- 관리자 검토 (AUTHENTICATION_GUIDE.md 참고)
-    approved_for_training BOOLEAN DEFAULT NULL,
-    reviewed_by INT DEFAULT NULL,
-    reviewed_at TIMESTAMP NULL DEFAULT NULL,
-    review_notes TEXT,
-
     INDEX idx_location (latitude, longitude),
     INDEX idx_detected_at (detected_at DESC),
-    INDEX idx_validation (validation_result),
-    INDEX idx_priority (priority_score DESC),
-    INDEX idx_risk_level (risk_level),
-    INDEX idx_location_type (location_type),
-    INDEX idx_approved (approved_for_training)
+    INDEX idx_validation (validation_result)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- 검증 통과한 포트홀만 보여주는 뷰
+-- 뷰 생성 (검증 통과한 포트홀만)
 CREATE OR REPLACE VIEW validated_potholes AS
 SELECT * FROM potholes WHERE validation_result = true;
-
--- 우선순위 높은 포트홀 뷰
-CREATE OR REPLACE VIEW high_priority_potholes AS
-SELECT * FROM potholes WHERE validation_result = true AND priority_score >= 2.0
-ORDER BY priority_score DESC, detected_at DESC;
 
 -- 사용자 테이블 (인증 시스템용)
 CREATE TABLE IF NOT EXISTS users (
@@ -60,20 +37,13 @@ CREATE TABLE IF NOT EXISTS users (
     role VARCHAR(20) DEFAULT 'user',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_login TIMESTAMP NULL,
-    INDEX idx_username (username),
-    INDEX idx_role (role)
+    last_login TIMESTAMP NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- potholes.reviewed_by -> users.id 참조 (테이블 생성 순서 때문에 나중에 추가)
-ALTER TABLE potholes
-    ADD CONSTRAINT fk_potholes_reviewed_by
-    FOREIGN KEY (reviewed_by) REFERENCES users(id)
-    ON DELETE SET NULL;
 
 -- 샘플 데이터 (테스트용, 선택사항)
 -- INSERT INTO potholes (latitude, longitude, depth_ratio, validation_result, image_path)
--- VALUES
+-- VALUES 
 --     (37.5665, 126.9780, 0.45, true, '/shared_images/sample1.jpg'),
 --     (37.5651, 126.9895, 0.32, true, '/shared_images/sample2.jpg'),
 --     (37.5660, 126.9770, 0.28, false, '/shared_images/sample3.jpg');
+

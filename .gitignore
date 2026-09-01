@@ -14,9 +14,9 @@ cloudflared/cert.pem
 # 대용량 생성물/데이터셋 — 저장소에 올리지 않음
 shared_images/
 models/
-ai-core/videos/
-ai-core/models/
-ai-core/processed_videos.json
+inference-container/videos/
+inference-container/models/
+inference-container/processed_videos.json
 *.mp4
 *.avi
 *.mov
