@@ -16,3 +16,6 @@ docker-compose -f archive/docker-compose-optimized.yml up -d --build
 ```
 
 관련 기술 문서는 [`archive/docs/`](./docs/)에 함께 있습니다.
+
+- **[`legacy/`](./legacy/)** — 위 아키텍처 실험과는 별개로, NPU/SLM 워커 쪽에서
+  더 나은 버전으로 대체된 초기 구현들(RBLN 기반 깊이 추정, 미완성 SLM 워커 등).
