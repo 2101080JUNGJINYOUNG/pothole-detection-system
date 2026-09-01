@@ -1,0 +1,64 @@
+{
+  "risk_zones": [
+    {
+      "name": "고속도로",
+      "type": "highway",
+      "priority_weight": 3.0,
+      "description": "고속도로 및 자동차 전용도로"
+    },
+    {
+      "name": "어린이 보호구역",
+      "type": "school_zone",
+      "priority_weight": 3.0,
+      "description": "어린이 보호구역 및 학교 주변"
+    },
+    {
+      "name": "학교 주변",
+      "type": "school_area",
+      "priority_weight": 2.5,
+      "description": "학교 주변 500m 이내"
+    },
+    {
+      "name": "병원 주변",
+      "type": "hospital_area",
+      "priority_weight": 2.5,
+      "description": "병원 및 응급의료기관 주변"
+    },
+    {
+      "name": "시내버스 전용차로",
+      "type": "bus_lane",
+      "priority_weight": 2.0,
+      "description": "시내버스 전용차로"
+    },
+    {
+      "name": "주거 지역",
+      "type": "residential",
+      "priority_weight": 1.2,
+      "description": "주거 밀집 지역"
+    },
+    {
+      "name": "상업 지역",
+      "type": "commercial",
+      "priority_weight": 1.0,
+      "description": "상업 지역"
+    },
+    {
+      "name": "일반 도로",
+      "type": "general",
+      "priority_weight": 1.0,
+      "description": "일반 도로"
+    },
+    {
+      "name": "공원/녹지",
+      "type": "park",
+      "priority_weight": 0.8,
+      "description": "공원 및 녹지 지역"
+    }
+  ],
+  "default_priority_weight": 1.0,
+  "depth_weight": 0.3,
+  "validation_weight": 0.2
+}
+
+
+

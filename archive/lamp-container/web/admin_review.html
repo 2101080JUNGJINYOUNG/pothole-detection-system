@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 검토 - Deep-Guardian</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 30px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .filters { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .filter-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .filter-group { flex: 1; min-width: 150px; }
+        .filter-group label { display: block; margin-bottom: 5px; font-size: 14px; }
+        .filter-group select, .filter-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px; }
+        .btn { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .btn:hover { background: #5568d3; }
+        .btn-success { background: #28a745; }
+        .btn-danger { background: #dc3545; }
+        .review-item { padding: 20px; border-bottom: 1px solid #eee; display: flex; gap: 20px; }
+        .review-image { width: 200px; height: 200px; object-fit: cover; border-radius: 5px; cursor: pointer; }
+        .review-info { flex: 1; }
+        .review-actions { display: flex; gap: 10px; flex-direction: column; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; border-radius: 10px; width: 90%; max-width: 800px; }
+        .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .close { font-size: 28px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 관리자: 포트홀 이미지 검토</h1>
+            <button class="btn" onclick="window.location.href='/'">대시보드로</button>
+        </div>
+
+        <div class="filters">
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>검토 상태</label>
+                    <select id="reviewStatus">
+                        <option value="all">전체</option>
+                        <option value="pending">검토 대기</option>
+                        <option value="approved">승인됨</option>
+                        <option value="rejected">거부됨</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>검증 상태</label>
+                    <select id="validationStatus">
+                        <option value="all">전체</option>
+                        <option value="validated">검증됨</option>
+                        <option value="not_validated">미검증</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>표시 개수</label>
+                    <input type="number" id="limit" value="20" min="10" max="100" step="10">
+                </div>
+                <div class="filter-group" style="display: flex; align-items: flex-end;">
+                    <button class="btn" onclick="loadReviewData()">새로고침</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="reviewList"></div>
+    </div>
+
+    <!-- 이미지 모달 -->
+    <div id="imageModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>이미지 미리보기</h3>
+                <span class="close" onclick="closeImageModal()">&times;</span>
+            </div>
+            <img id="modalImage" src="" style="width: 100%; max-height: 600px; object-fit: contain;">
+        </div>
+    </div>
+
+    <script>
+        async function loadReviewData() {
+            try {
+                const params = new URLSearchParams();
+                params.append('limit', document.getElementById('limit').value);
+                params.append('review_status', document.getElementById('reviewStatus').value);
+                params.append('validation_status', document.getElementById('validationStatus').value);
+                
+                const response = await fetch(`/api/admin/review?${params.toString()}`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert('오류: ' + data.error);
+                    return;
+                }
+                
+                const container = document.getElementById('reviewList');
+                if (data.potholes.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; padding: 20px;">검토할 이미지가 없습니다.</p>';
+                    return;
+                }
+                
+                container.innerHTML = data.potholes.map(p => {
+                    const imageUrl = p.image_path ? `/api/image/${p.id}` : '';
+                    const reviewStatus = p.approved_for_training === null ? '대기' : 
+                                       p.approved_for_training ? '승인됨' : '거부됨';
+                    const reviewStatusClass = p.approved_for_training === null ? '' : 
+                                            p.approved_for_training ? 'btn-success' : 'btn-danger';
+                    
+                    return `
+                        <div class="review-item">
+                            ${imageUrl ? `<img src="${imageUrl}" class="review-image" onclick="showImage(${p.id})" alt="포트홀 이미지">` : '<div style="width: 200px; height: 200px; background: #eee;"></div>'}
+                            <div class="review-info">
+                                <h3>포트홀 #${p.id}</h3>
+                                <p>위도: ${p.latitude}, 경도: ${p.longitude}</p>
+                                <p>깊이 비율: ${p.depth_ratio} | 신뢰도: ${p.confidence_score || 'N/A'}</p>
+                                <p>검증 결과: ${p.validation_result ? '✅ 통과' : '❌ 실패'}</p>
+                                <p>위험도: ${p.risk_level || 'N/A'}</p>
+                                <p>검토 상태: ${reviewStatus}</p>
+                                ${p.review_notes ? `<p>검토 노트: ${p.review_notes}</p>` : ''}
+                            </div>
+                            <div class="review-actions">
+                                <button class="btn btn-success" onclick="approvePothole(${p.id})">승인</button>
+                                <button class="btn btn-danger" onclick="rejectPothole(${p.id})">거부</button>
+                                <textarea id="note_${p.id}" placeholder="검토 노트" style="width: 200px; height: 80px; padding: 5px; margin-top: 10px;">${p.review_notes || ''}</textarea>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Load review data failed:', error);
+                alert('데이터 로드 실패: ' + error.message);
+            }
+        }
+
+        async function approvePothole(id) {
+            const note = document.getElementById(`note_${id}`).value;
+            try {
+                const response = await fetch(`/api/admin/review/${id}/approve`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ note })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('승인되었습니다.');
+                    loadReviewData();
+                } else {
+                    alert('오류: ' + data.error);
+                }
+            } catch (error) {
+                alert('오류: ' + error.message);
+            }
+        }
+
+        async function rejectPothole(id) {
+            const note = document.getElementById(`note_${id}`).value;
+            try {
+                const response = await fetch(`/api/admin/review/${id}/reject`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ note })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('거부되었습니다.');
+                    loadReviewData();
+                } else {
+                    alert('오류: ' + data.error);
+                }
+            } catch (error) {
+                alert('오류: ' + error.message);
+            }
+        }
+
+        function showImage(id) {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('modalImage');
+            img.src = `/api/image/${id}`;
+            modal.style.display = 'block';
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('imageModal');
+            if (event.target === modal) {
+                closeImageModal();
+            }
+        }
+
+        // 초기 로드
+        loadReviewData();
+    </script>
+</body>
+</html>
+

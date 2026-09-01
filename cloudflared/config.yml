@@ -1,0 +1,16 @@
+# Cloudflare Tunnel 설정
+credentials-file: /etc/cloudflared/credentials.json
+origincert: /etc/cloudflared/cert.pem
+
+ingress:
+  # Nginx (Reverse Proxy) - 포트 80 (메인 대시보드)
+  - hostname: deep-guardian.your-domain.com
+    service: http://web-server:80
+  
+  # Dashboard (Streamlit) - 포트 8501 (직접 접근)
+  - hostname: deep-guardian-dashboard.your-domain.com
+    service: http://dashboard:8501
+  
+  # 기본 라우트 (모든 요청을 Nginx로)
+  - service: http_status:404
+

@@ -1,0 +1,91 @@
+# Docker Compose file for Deep-Guardian (Optimized 2-Container Architecture)
+# Container 1: app (Dashboard + AI-core 통합)
+# Container 2: db (PostgreSQL)
+
+services:
+  # Container 1: app (Dashboard + AI-core 통합)
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      args:
+        BUILDKIT_INLINE_CACHE: 1
+    container_name: deep-guardian-app
+    ports:
+      - "80:80"
+    volumes:
+      - ./dashboard:/app/dashboard
+      - ./ai-core:/app/ai-core
+      - ./ai-core/models:/app/models
+      - ./shared_images:/app/shared_images
+      - ./ai-core/videos:/app/videos
+      - ./django_app:/app/django_app:ro
+    environment:
+      - NPU_WORKER_URL=http://host.docker.internal:9001/depth
+      - YOLO_MODEL_PATH=/app/models/best2.pt
+      - CUDA_VISIBLE_DEVICES=0
+      - KAKAO_MAP_APP_KEY=${KAKAO_MAP_APP_KEY:-}
+      - DATABASE_URL=postgresql://pothole_user:pothole_pass@db:5432/pothole_db
+      - VIDEO_DIR=/app/videos
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - deep-guardian-network
+    restart: unless-stopped
+    # GPU 지원 (WSL에서 사용 가능한 경우)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Container 2: db (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: deep-guardian-db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      - POSTGRES_DB=pothole_db
+      - POSTGRES_USER=pothole_user
+      - POSTGRES_PASSWORD=pothole_pass
+    networks:
+      - deep-guardian-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pothole_user -d pothole_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Container 3: cloudflared (Cloudflare Tunnel)
+  cloudflared:
+    build:
+      context: ./cloudflared
+      dockerfile: Dockerfile
+    container_name: deep-guardian-tunnel
+    volumes:
+      - ./cloudflared/credentials.json:/etc/cloudflared/credentials.json:ro
+      - ./cloudflared/config.yml:/etc/cloudflared/config.yml:ro
+      - ./cloudflared/cert.pem:/etc/cloudflared/cert.pem:ro
+    depends_on:
+      - app
+    networks:
+      - deep-guardian-network
+    restart: unless-stopped
+    # command는 Dockerfile의 ENTRYPOINT에서 처리됨
+
+networks:
+  deep-guardian-network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+

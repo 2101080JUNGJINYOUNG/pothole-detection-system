@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep-Guardian Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .status {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            flex: 1;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .status-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .status-card p {
+            color: #666;
+            font-size: 14px;
+        }
+        #map {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .pothole-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .pothole-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pothole-item:last-child {
+            border-bottom: none;
+        }
+        .pothole-info {
+            flex: 1;
+        }
+        .pothole-info strong {
+            color: #333;
+        }
+        .pothole-info span {
+            color: #666;
+            font-size: 14px;
+        }
+        .validation-badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .validation-badge.valid {
+            background: #28a745;
+            color: white;
+        }
+        .validation-badge.invalid {
+            background: #dc3545;
+            color: white;
+        }
+        /* 챗봇 스타일 */
+        .chatbot-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            max-height: 500px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            display: none;
+            flex-direction: column;
+            z-index: 1000;
+        }
+        .chatbot-container.open {
+            display: flex;
+        }
+        .chatbot-header {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chatbot-header h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+        .chatbot-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+        }
+        .chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            max-height: 350px;
+        }
+        .chatbot-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .chatbot-message.user {
+            background: #667eea;
+            color: white;
+            text-align: right;
+        }
+        .chatbot-message.bot {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .chatbot-input-container {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+        .chatbot-input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .chatbot-send {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .chatbot-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            z-index: 999;
+        }
+        .chatbot-status {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛣️ Deep-Guardian 포트홀 모니터링 시스템</h1>
+        
+        <div class="status">
+            <div class="status-card">
+                <h3>시스템 상태</h3>
+                <p id="system-status">확인 중...</p>
+            </div>
+            <div class="status-card">
+                <h3>데이터베이스</h3>
+                <p id="db-status">확인 중...</p>
+            </div>
+            <div class="status-card">
+                <h3>포트홀 수</h3>
+                <p id="pothole-count">로딩 중...</p>
+            </div>
+            <div class="status-card">
+                <h3>Phi-3 챗봇</h3>
+                <p id="phi3-status">확인 중...</p>
+                <span class="chatbot-status" id="phi3-status-detail"></span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button onclick="loadPotholes()">데이터 새로고침</button>
+            <button onclick="toggleValidated()">검증된 것만 보기</button>
+        </div>
+
+        <div id="map"></div>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px;">포트홀 목록</h2>
+        <div class="pothole-list" id="pothole-list">
+            <p style="text-align: center; color: #666; padding: 20px;">로딩 중...</p>
+        </div>
+    </div>
+
+    <!-- 챗봇 토글 버튼 -->
+    <button class="chatbot-toggle" onclick="toggleChatbot()" title="챗봇 열기">💬</button>
+
+    <!-- 챗봇 컨테이너 -->
+    <div class="chatbot-container" id="chatbot-container">
+        <div class="chatbot-header">
+            <h3>🤖 Phi-3 챗봇</h3>
+            <button class="chatbot-close" onclick="toggleChatbot()">×</button>
+        </div>
+        <div class="chatbot-messages" id="chatbot-messages">
+            <div class="chatbot-message bot">
+                안녕하세요! Deep-Guardian 포트홀 탐지 시스템 챗봇입니다. 무엇을 도와드릴까요?
+            </div>
+        </div>
+        <div class="chatbot-input-container">
+            <input type="text" class="chatbot-input" id="chatbot-input" placeholder="메시지를 입력하세요..." onkeypress="handleChatKeyPress(event)">
+            <button class="chatbot-send" onclick="sendChatMessage()">전송</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    <script>
+        let map;
+        let markers = [];
+        let showValidatedOnly = false;
+
+        // 지도 초기화
+        function initMap() {
+            map = L.map('map').setView([37.5665, 126.9780], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        // 헬스 체크
+        async function checkHealth() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                document.getElementById('system-status').textContent = '정상';
+                document.getElementById('db-status').textContent = data.database === 'connected' ? '연결됨' : '연결 안 됨';
+                
+                // Phi-3 상태 업데이트
+                if (data.phi3_chatbot) {
+                    document.getElementById('phi3-status').textContent = data.phi3_chatbot === 'loaded' ? '로드됨' : '로드 안 됨';
+                    document.getElementById('phi3-status-detail').textContent = data.phi3_chatbot === 'loaded' ? '사용 가능' : '모델 로드 필요';
+                }
+            } catch (error) {
+                document.getElementById('system-status').textContent = '오류';
+                document.getElementById('db-status').textContent = '연결 안 됨';
+            }
+        }
+
+        // 챗봇 관련 함수
+        function toggleChatbot() {
+            const container = document.getElementById('chatbot-container');
+            container.classList.toggle('open');
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chatbot-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 사용자 메시지 표시
+            const messagesDiv = document.getElementById('chatbot-messages');
+            const userMessage = document.createElement('div');
+            userMessage.className = 'chatbot-message user';
+            userMessage.textContent = message;
+            messagesDiv.appendChild(userMessage);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            input.value = '';
+            
+            // 로딩 메시지
+            const loadingMessage = document.createElement('div');
+            loadingMessage.className = 'chatbot-message bot';
+            loadingMessage.textContent = '답변 생성 중...';
+            messagesDiv.appendChild(loadingMessage);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        max_tokens: 200,
+                        temperature: 0.7
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // 로딩 메시지 제거
+                loadingMessage.remove();
+                
+                if (data.success) {
+                    const botMessage = document.createElement('div');
+                    botMessage.className = 'chatbot-message bot';
+                    botMessage.textContent = data.response;
+                    messagesDiv.appendChild(botMessage);
+                } else {
+                    const errorMessage = document.createElement('div');
+                    errorMessage.className = 'chatbot-message bot';
+                    errorMessage.textContent = `오류: ${data.error || '알 수 없는 오류'}`;
+                    messagesDiv.appendChild(errorMessage);
+                }
+                
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            } catch (error) {
+                loadingMessage.remove();
+                const errorMessage = document.createElement('div');
+                errorMessage.className = 'chatbot-message bot';
+                errorMessage.textContent = `연결 오류: ${error.message}`;
+                messagesDiv.appendChild(errorMessage);
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }
+        }
+
+        // 포트홀 데이터 로드
+        async function loadPotholes() {
+            try {
+                const url = `/api/potholes?validated=${showValidatedOnly}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                document.getElementById('pothole-count').textContent = `${data.count}개`;
+
+                // 기존 마커 제거
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+
+                // 목록 업데이트
+                const listElement = document.getElementById('pothole-list');
+                if (data.potholes.length === 0) {
+                    listElement.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">포트홀 데이터가 없습니다.</p>';
+                    return;
+                }
+
+                listElement.innerHTML = data.potholes.map(pothole => {
+                    const marker = L.marker([pothole.latitude, pothole.longitude])
+                        .addTo(map)
+                        .bindPopup(`
+                            <strong>포트홀 #${pothole.id}</strong><br>
+                            깊이 비율: ${pothole.depth_ratio}<br>
+                            검증: ${pothole.validation_result ? '통과' : '실패'}<br>
+                            탐지 시간: ${new Date(pothole.detected_at).toLocaleString('ko-KR')}
+                        `);
+                    markers.push(marker);
+
+                    return `
+                        <div class="pothole-item">
+                            <div class="pothole-info">
+                                <strong>포트홀 #${pothole.id}</strong><br>
+                                <span>위도: ${pothole.latitude}, 경도: ${pothole.longitude}</span><br>
+                                <span>깊이 비율: ${pothole.depth_ratio} | 탐지 시간: ${new Date(pothole.detected_at).toLocaleString('ko-KR')}</span>
+                            </div>
+                            <span class="validation-badge ${pothole.validation_result ? 'valid' : 'invalid'}">
+                                ${pothole.validation_result ? '검증 통과' : '검증 실패'}
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+
+                // 지도 범위 조정
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+            } catch (error) {
+                console.error('Error loading potholes:', error);
+                document.getElementById('pothole-list').innerHTML = '<p style="text-align: center; color: #dc3545; padding: 20px;">데이터 로드 실패</p>';
+            }
+        }
+
+        function toggleValidated() {
+            showValidatedOnly = !showValidatedOnly;
+            loadPotholes();
+        }
+
+        // 초기화
+        initMap();
+        checkHealth();
+        loadPotholes();
+        setInterval(checkHealth, 30000); // 30초마다 헬스 체크
+        setInterval(loadPotholes, 60000); // 1분마다 데이터 새로고침
+    </script>
+</body>
+</html>
+

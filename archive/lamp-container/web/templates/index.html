@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep-Guardian Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 30px;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .status {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .status-card {
+            flex: 1;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .status-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .status-card p {
+            color: #666;
+            font-size: 14px;
+        }
+        #map {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        button:hover {
+            background: #5568d3;
+        }
+        .pothole-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .pothole-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .pothole-item:last-child {
+            border-bottom: none;
+        }
+        .pothole-info {
+            flex: 1;
+        }
+        .pothole-info strong {
+            color: #333;
+        }
+        .pothole-info span {
+            color: #666;
+            font-size: 14px;
+        }
+        .validation-badge {
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .validation-badge.valid {
+            background: #28a745;
+            color: white;
+        }
+        .validation-badge.invalid {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛣️ Deep-Guardian 포트홀 모니터링 시스템</h1>
+        
+        <div class="status">
+            <div class="status-card">
+                <h3>시스템 상태</h3>
+                <p id="system-status">확인 중...</p>
+            </div>
+            <div class="status-card">
+                <h3>데이터베이스</h3>
+                <p id="db-status">확인 중...</p>
+            </div>
+            <div class="status-card">
+                <h3>포트홀 수</h3>
+                <p id="pothole-count">로딩 중...</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button onclick="loadPotholes()">데이터 새로고침</button>
+            <button onclick="toggleValidated()">검증된 것만 보기</button>
+        </div>
+
+        <div id="map"></div>
+
+        <h2 style="margin-top: 30px; margin-bottom: 15px;">포트홀 목록</h2>
+        <div class="pothole-list" id="pothole-list">
+            <p style="text-align: center; color: #666; padding: 20px;">로딩 중...</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+    <script>
+        let map;
+        let markers = [];
+        let showValidatedOnly = false;
+
+        // 지도 초기화
+        function initMap() {
+            map = L.map('map').setView([37.5665, 126.9780], 13);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+        }
+
+        // 헬스 체크
+        async function checkHealth() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                document.getElementById('system-status').textContent = '정상';
+                document.getElementById('db-status').textContent = data.database === 'connected' ? '연결됨' : '연결 안 됨';
+            } catch (error) {
+                document.getElementById('system-status').textContent = '오류';
+                document.getElementById('db-status').textContent = '연결 안 됨';
+            }
+        }
+
+        // 포트홀 데이터 로드
+        async function loadPotholes() {
+            try {
+                const url = `/api/potholes?validated=${showValidatedOnly}`;
+                const response = await fetch(url);
+                const data = await response.json();
+
+                document.getElementById('pothole-count').textContent = `${data.count}개`;
+
+                // 기존 마커 제거
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+
+                // 목록 업데이트
+                const listElement = document.getElementById('pothole-list');
+                if (data.potholes.length === 0) {
+                    listElement.innerHTML = '<p style="text-align: center; color: #666; padding: 20px;">포트홀 데이터가 없습니다.</p>';
+                    return;
+                }
+
+                listElement.innerHTML = data.potholes.map(pothole => {
+                    const marker = L.marker([pothole.latitude, pothole.longitude])
+                        .addTo(map)
+                        .bindPopup(`
+                            <strong>포트홀 #${pothole.id}</strong><br>
+                            깊이 비율: ${pothole.depth_ratio}<br>
+                            검증: ${pothole.validation_result ? '통과' : '실패'}<br>
+                            탐지 시간: ${new Date(pothole.detected_at).toLocaleString('ko-KR')}
+                        `);
+                    markers.push(marker);
+
+                    return `
+                        <div class="pothole-item">
+                            <div class="pothole-info">
+                                <strong>포트홀 #${pothole.id}</strong><br>
+                                <span>위도: ${pothole.latitude}, 경도: ${pothole.longitude}</span><br>
+                                <span>깊이 비율: ${pothole.depth_ratio} | 탐지 시간: ${new Date(pothole.detected_at).toLocaleString('ko-KR')}</span>
+                            </div>
+                            <span class="validation-badge ${pothole.validation_result ? 'valid' : 'invalid'}">
+                                ${pothole.validation_result ? '검증 통과' : '검증 실패'}
+                            </span>
+                        </div>
+                    `;
+                }).join('');
+
+                // 지도 범위 조정
+                if (markers.length > 0) {
+                    const group = new L.featureGroup(markers);
+                    map.fitBounds(group.getBounds().pad(0.1));
+                }
+            } catch (error) {
+                console.error('Error loading potholes:', error);
+                document.getElementById('pothole-list').innerHTML = '<p style="text-align: center; color: #dc3545; padding: 20px;">데이터 로드 실패</p>';
+            }
+        }
+
+        function toggleValidated() {
+            showValidatedOnly = !showValidatedOnly;
+            loadPotholes();
+        }
+
+        // 초기화
+        initMap();
+        checkHealth();
+        loadPotholes();
+        setInterval(checkHealth, 30000); // 30초마다 헬스 체크
+        setInterval(loadPotholes, 60000); // 1분마다 데이터 새로고침
+    </script>
+</body>
+</html>
+

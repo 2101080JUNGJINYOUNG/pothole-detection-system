@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep-Guardian 포트홀 모니터링 시스템</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 40px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .info-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .info-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        .info-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        .info-section li {
+            padding: 8px 0;
+            color: #555;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .info-section li:last-child {
+            border-bottom: none;
+        }
+        .info-section li strong {
+            color: #333;
+            display: inline-block;
+            width: 150px;
+        }
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .link-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            text-decoration: none;
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-align: center;
+        }
+        .link-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .link-card h3 {
+            margin-bottom: 10px;
+            font-size: 1.3em;
+        }
+        .link-card p {
+            opacity: 0.9;
+            font-size: 0.9em;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+        .status.active {
+            background: #28a745;
+            color: white;
+        }
+        .status.inactive {
+            background: #dc3545;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🕳️ Deep-Guardian</h1>
+            <p>AI 기반 포트홀 탐지 및 모니터링 시스템</p>
+        </div>
+
+        <div class="info-section">
+            <h2>시스템 정보</h2>
+            <ul>
+                <li><strong>웹서버:</strong> Apache HTTP Server</li>
+                <li><strong>AI 엔진:</strong> YOLOv8 + Depth Anything V2</li>
+                <li><strong>데이터베이스:</strong> PostgreSQL</li>
+                <li><strong>NPU 가속:</strong> OpenVINO (Intel NPU)</li>
+            </ul>
+        </div>
+
+        <div class="info-section">
+            <h2>주요 기능</h2>
+            <ul>
+                <li><strong>포트홀 탐지:</strong> YOLOv8 딥러닝 모델</li>
+                <li><strong>깊이 검증:</strong> Depth Anything V2 + OpenVINO</li>
+                <li><strong>위험도 평가:</strong> 위치 기반 위험도 계산</li>
+                <li><strong>자동 파인튜닝:</strong> 일일 자동 모델 학습</li>
+                <li><strong>비디오 처리:</strong> 동영상 파일 자동 추론</li>
+            </ul>
+        </div>
+
+        <div class="links">
+            <a href="/shared_images/" class="link-card">
+                <h3>📁 공유 이미지</h3>
+                <p>탐지된 포트홀 이미지 및 비디오 결과 확인</p>
+            </a>
+            <a href="/shared_images/video_results/" class="link-card">
+                <h3>🎥 비디오 결과</h3>
+                <p>비디오 추론 결과 확인 및 다운로드</p>
+            </a>
+            <a href="/shared_images/detections/" class="link-card">
+                <h3>🖼️ 탐지 이미지</h3>
+                <p>YOLOv8로 탐지된 포트홀 이미지 확인</p>
+            </a>
+        </div>
+
+        <div class="info-section" style="margin-top: 30px;">
+            <h2>시스템 접근 정보</h2>
+            <ul>
+                <li><strong>웹서버:</strong> http://localhost</li>
+                <li><strong>데이터베이스:</strong> localhost:5432</li>
+                <li><strong>NPU Worker:</strong> http://localhost:9001</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
+
+
+

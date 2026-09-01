@@ -1,0 +1,6 @@
+# Cloudflare Tunnel Credentials
+# 보안상 중요한 파일이므로 Git에 커밋하지 않음
+credentials.json
+
+
+

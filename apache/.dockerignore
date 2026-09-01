@@ -1,0 +1,8 @@
+# Apache .dockerignore
+*.md
+*.txt
+!httpd-vhost.conf
+.DS_Store
+.git
+.gitignore
+

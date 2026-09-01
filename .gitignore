@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# Secrets — 로컬에만 존재해야 함
+.env
+cloudflared/credentials.json
+cloudflared/cert.pem
+
+# 대용량 생성물/데이터셋 — 저장소에 올리지 않음
+shared_images/
+models/
+ai-core/videos/
+ai-core/models/
+ai-core/processed_videos.json
+*.mp4
+*.avi
+*.mov
+*.mkv
+
+# Claude Code 로컬 설정
+.claude/settings.local.json
+
+# OS
+.DS_Store
+Thumbs.db
+docs.zip

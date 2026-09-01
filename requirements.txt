@@ -1,0 +1,8 @@
+# Deep-Guardian NPU Worker Requirements
+openvino>=2024.0.0
+flask>=2.3.0
+flask-cors>=4.0.0
+pillow>=10.0.0
+numpy>=1.24.0
+opencv-python>=4.8.0
+requests>=2.31.0

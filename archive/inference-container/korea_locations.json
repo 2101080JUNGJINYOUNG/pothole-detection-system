@@ -1,0 +1,493 @@
+{
+  "locations": [
+    {
+      "name": "서울시청",
+      "type": "government",
+      "latitude": 37.5665,
+      "longitude": 126.9780
+    },
+    {
+      "name": "서울대학교병원",
+      "type": "hospital",
+      "latitude": 37.5663,
+      "longitude": 126.9990
+    },
+    {
+      "name": "서울고등학교",
+      "type": "school",
+      "latitude": 37.5651,
+      "longitude": 126.9890
+    },
+    {
+      "name": "경부고속도로 서울IC",
+      "type": "highway",
+      "latitude": 37.5000,
+      "longitude": 127.0000
+    },
+    {
+      "name": "부산시청",
+      "type": "government",
+      "latitude": 35.1796,
+      "longitude": 129.0756
+    },
+    {
+      "name": "부산대학교병원",
+      "type": "hospital",
+      "latitude": 35.2333,
+      "longitude": 129.0833
+    },
+    {
+      "name": "부산고등학교",
+      "type": "school",
+      "latitude": 35.1028,
+      "longitude": 129.0403
+    },
+    {
+      "name": "경부고속도로 부산IC",
+      "type": "highway",
+      "latitude": 35.2000,
+      "longitude": 129.1000
+    },
+    {
+      "name": "인천시청",
+      "type": "government",
+      "latitude": 37.4563,
+      "longitude": 126.7052
+    },
+    {
+      "name": "인천대학교병원",
+      "type": "hospital",
+      "latitude": 37.4500,
+      "longitude": 126.6500
+    },
+    {
+      "name": "인천고등학교",
+      "type": "school",
+      "latitude": 37.4700,
+      "longitude": 126.6300
+    },
+    {
+      "name": "경인고속도로 인천IC",
+      "type": "highway",
+      "latitude": 37.4500,
+      "longitude": 126.7000
+    },
+    {
+      "name": "대구시청",
+      "type": "government",
+      "latitude": 35.8714,
+      "longitude": 128.6014
+    },
+    {
+      "name": "대구가톨릭대학교병원",
+      "type": "hospital",
+      "latitude": 35.8500,
+      "longitude": 128.6000
+    },
+    {
+      "name": "대구고등학교",
+      "type": "school",
+      "latitude": 35.8800,
+      "longitude": 128.6200
+    },
+    {
+      "name": "경부고속도로 대구IC",
+      "type": "highway",
+      "latitude": 35.8500,
+      "longitude": 128.5500
+    },
+    {
+      "name": "대전시청",
+      "type": "government",
+      "latitude": 36.3504,
+      "longitude": 127.3845
+    },
+    {
+      "name": "충남대학교병원",
+      "type": "hospital",
+      "latitude": 36.3667,
+      "longitude": 127.3333
+    },
+    {
+      "name": "대전고등학교",
+      "type": "school",
+      "latitude": 36.3400,
+      "longitude": 127.4000
+    },
+    {
+      "name": "경부고속도로 대전IC",
+      "type": "highway",
+      "latitude": 36.3500,
+      "longitude": 127.3500
+    },
+    {
+      "name": "광주시청",
+      "type": "government",
+      "latitude": 35.1595,
+      "longitude": 126.8526
+    },
+    {
+      "name": "전남대학교병원",
+      "type": "hospital",
+      "latitude": 35.1667,
+      "longitude": 126.9000
+    },
+    {
+      "name": "광주고등학교",
+      "type": "school",
+      "latitude": 35.1500,
+      "longitude": 126.8500
+    },
+    {
+      "name": "호남고속도로 광주IC",
+      "type": "highway",
+      "latitude": 35.1500,
+      "longitude": 126.8000
+    },
+    {
+      "name": "울산시청",
+      "type": "government",
+      "latitude": 35.5384,
+      "longitude": 129.3114
+    },
+    {
+      "name": "울산대학교병원",
+      "type": "hospital",
+      "latitude": 35.5500,
+      "longitude": 129.3000
+    },
+    {
+      "name": "울산고등학교",
+      "type": "school",
+      "latitude": 35.5300,
+      "longitude": 129.3200
+    },
+    {
+      "name": "경부고속도로 울산IC",
+      "type": "highway",
+      "latitude": 35.5000,
+      "longitude": 129.3000
+    },
+    {
+      "name": "세종시청",
+      "type": "government",
+      "latitude": 36.4800,
+      "longitude": 127.2892
+    },
+    {
+      "name": "세종충남대학교병원",
+      "type": "hospital",
+      "latitude": 36.5000,
+      "longitude": 127.3000
+    },
+    {
+      "name": "세종고등학교",
+      "type": "school",
+      "latitude": 36.4700,
+      "longitude": 127.2800
+    },
+    {
+      "name": "경부고속도로 세종IC",
+      "type": "highway",
+      "latitude": 36.4500,
+      "longitude": 127.2500
+    },
+    {
+      "name": "수원시청",
+      "type": "government",
+      "latitude": 37.2636,
+      "longitude": 127.0286
+    },
+    {
+      "name": "아주대학교병원",
+      "type": "hospital",
+      "latitude": 37.2833,
+      "longitude": 127.0500
+    },
+    {
+      "name": "수원고등학교",
+      "type": "school",
+      "latitude": 37.2600,
+      "longitude": 127.0200
+    },
+    {
+      "name": "경부고속도로 수원IC",
+      "type": "highway",
+      "latitude": 37.2500,
+      "longitude": 127.0000
+    },
+    {
+      "name": "성남시청",
+      "type": "government",
+      "latitude": 37.4201,
+      "longitude": 127.1267
+    },
+    {
+      "name": "분당서울대학교병원",
+      "type": "hospital",
+      "latitude": 37.3833,
+      "longitude": 127.1167
+    },
+    {
+      "name": "성남고등학교",
+      "type": "school",
+      "latitude": 37.4100,
+      "longitude": 127.1300
+    },
+    {
+      "name": "경부고속도로 성남IC",
+      "type": "highway",
+      "latitude": 37.4000,
+      "longitude": 127.1000
+    },
+    {
+      "name": "고양시청",
+      "type": "government",
+      "latitude": 37.6584,
+      "longitude": 126.8320
+    },
+    {
+      "name": "고양아산병원",
+      "type": "hospital",
+      "latitude": 37.6500,
+      "longitude": 126.8000
+    },
+    {
+      "name": "고양고등학교",
+      "type": "school",
+      "latitude": 37.6600,
+      "longitude": 126.8400
+    },
+    {
+      "name": "경부고속도로 고양IC",
+      "type": "highway",
+      "latitude": 37.6500,
+      "longitude": 126.8000
+    },
+    {
+      "name": "용인시청",
+      "type": "government",
+      "latitude": 37.2411,
+      "longitude": 127.1776
+    },
+    {
+      "name": "단국대학교병원",
+      "type": "hospital",
+      "latitude": 37.3167,
+      "longitude": 127.1333
+    },
+    {
+      "name": "용인고등학교",
+      "type": "school",
+      "latitude": 37.2400,
+      "longitude": 127.1800
+    },
+    {
+      "name": "경부고속도로 용인IC",
+      "type": "highway",
+      "latitude": 37.2500,
+      "longitude": 127.1500
+    },
+    {
+      "name": "청주시청",
+      "type": "government",
+      "latitude": 36.6424,
+      "longitude": 127.4890
+    },
+    {
+      "name": "충북대학교병원",
+      "type": "hospital",
+      "latitude": 36.6333,
+      "longitude": 127.4667
+    },
+    {
+      "name": "청주고등학교",
+      "type": "school",
+      "latitude": 36.6400,
+      "longitude": 127.4900
+    },
+    {
+      "name": "경부고속도로 청주IC",
+      "type": "highway",
+      "latitude": 36.6000,
+      "longitude": 127.4500
+    },
+    {
+      "name": "천안시청",
+      "type": "government",
+      "latitude": 36.8154,
+      "longitude": 127.1138
+    },
+    {
+      "name": "순천향대학교병원",
+      "type": "hospital",
+      "latitude": 36.8167,
+      "longitude": 127.1500
+    },
+    {
+      "name": "천안고등학교",
+      "type": "school",
+      "latitude": 36.8200,
+      "longitude": 127.1100
+    },
+    {
+      "name": "경부고속도로 천안IC",
+      "type": "highway",
+      "latitude": 36.8000,
+      "longitude": 127.1000
+    },
+    {
+      "name": "전주시청",
+      "type": "government",
+      "latitude": 35.8242,
+      "longitude": 127.1480
+    },
+    {
+      "name": "전주대학교병원",
+      "type": "hospital",
+      "latitude": 35.8333,
+      "longitude": 127.1667
+    },
+    {
+      "name": "전주고등학교",
+      "type": "school",
+      "latitude": 35.8200,
+      "longitude": 127.1500
+    },
+    {
+      "name": "호남고속도로 전주IC",
+      "type": "highway",
+      "latitude": 35.8000,
+      "longitude": 127.1000
+    },
+    {
+      "name": "포항시청",
+      "type": "government",
+      "latitude": 36.0322,
+      "longitude": 129.3650
+    },
+    {
+      "name": "포항공과대학교병원",
+      "type": "hospital",
+      "latitude": 36.0167,
+      "longitude": 129.3333
+    },
+    {
+      "name": "포항고등학교",
+      "type": "school",
+      "latitude": 36.0300,
+      "longitude": 129.3700
+    },
+    {
+      "name": "경부고속도로 포항IC",
+      "type": "highway",
+      "latitude": 36.0000,
+      "longitude": 129.3000
+    },
+    {
+      "name": "창원시청",
+      "type": "government",
+      "latitude": 35.2278,
+      "longitude": 128.6817
+    },
+    {
+      "name": "경상대학교병원",
+      "type": "hospital",
+      "latitude": 35.1833,
+      "longitude": 128.5667
+    },
+    {
+      "name": "창원고등학교",
+      "type": "school",
+      "latitude": 35.2300,
+      "longitude": 128.6800
+    },
+    {
+      "name": "경부고속도로 창원IC",
+      "type": "highway",
+      "latitude": 35.2000,
+      "longitude": 128.6500
+    },
+    {
+      "name": "제주시청",
+      "type": "government",
+      "latitude": 33.4996,
+      "longitude": 126.5312
+    },
+    {
+      "name": "제주대학교병원",
+      "type": "hospital",
+      "latitude": 33.5000,
+      "longitude": 126.5500
+    },
+    {
+      "name": "제주고등학교",
+      "type": "school",
+      "latitude": 33.5000,
+      "longitude": 126.5200
+    },
+    {
+      "name": "제주고속도로 제주IC",
+      "type": "highway",
+      "latitude": 33.4800,
+      "longitude": 126.5000
+    },
+    {
+      "name": "서해안고속도로 서천IC",
+      "type": "highway",
+      "latitude": 36.0667,
+      "longitude": 126.6833
+    },
+    {
+      "name": "중앙고속도로 춘천IC",
+      "type": "highway",
+      "latitude": 37.8833,
+      "longitude": 127.7333
+    },
+    {
+      "name": "영동고속도로 강릉IC",
+      "type": "highway",
+      "latitude": 37.7500,
+      "longitude": 128.8833
+    },
+    {
+      "name": "중부고속도로 이천IC",
+      "type": "highway",
+      "latitude": 37.2833,
+      "longitude": 127.4333
+    },
+    {
+      "name": "서울아산병원",
+      "type": "hospital",
+      "latitude": 37.5269,
+      "longitude": 127.1106
+    },
+    {
+      "name": "삼성서울병원",
+      "type": "hospital",
+      "latitude": 37.4881,
+      "longitude": 127.0856
+    },
+    {
+      "name": "서울대학교",
+      "type": "school",
+      "latitude": 37.4597,
+      "longitude": 126.9514
+    },
+    {
+      "name": "연세대학교",
+      "type": "school",
+      "latitude": 37.5661,
+      "longitude": 126.9389
+    },
+    {
+      "name": "고려대학교",
+      "type": "school",
+      "latitude": 37.5894,
+      "longitude": 127.0267
+    }
+  ]
+}
+
+
+

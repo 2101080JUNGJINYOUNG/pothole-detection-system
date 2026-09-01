@@ -1,0 +1,32 @@
+# AI-core .dockerignore
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+*.log
+.git/
+.gitignore
+.DS_Store
+*.md
+!README.md
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+# 모델 파일은 볼륨으로 마운트되므로 제외하지 않음
+# models/
+# videos/
+# shared_images/
+
